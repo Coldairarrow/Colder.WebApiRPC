@@ -1,261 +1,79 @@
-﻿using Colder.WebApiRPC.Hosting.Attributes;
-using Colder.WebApiRPC.Hosting.Helpers;
+﻿using Colder.WebApiRPC.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Colder.WebApiRPC.Hosting
 {
     public class WebApiRPCConvention : IApplicationModelConvention
     {
+        private static readonly Assembly _mvcCoreAssembly = Assembly.Load("Microsoft.AspNetCore.Mvc.Core");
         public void Apply(ApplicationModel application)
         {
-            foreach (var aController in application.Controllers)
+            foreach (var aController in application.Controllers.ToList())
             {
                 var type = aController.ControllerType.AsType();
-                if (type.IsWebApiRPCController())
-                {
-                    //接口显示
-                    if (aController.ApiExplorer.GroupName.IsNullOrEmpty())
-                    {
-                        aController.ApiExplorer.GroupName = aController.ControllerName;
-                    }
-
-                    if (aController.ApiExplorer.IsVisible == null)
-                    {
-                        aController.ApiExplorer.IsVisible = true;
-                    }
-
-                    foreach (var action in aController.Actions)
-                    {
-                        if (action.ApiExplorer.IsVisible == null)
-                        {
-                            action.ApiExplorer.IsVisible = true;
-                        }
-                    }
-
-                    ConfigureDynamicWebApi(aController);
-                }
-            }
-        }
-        private void ConfigureDynamicWebApi(ControllerModel controller)
-        {
-            ConfigureSelector(controller, controllerAttr);
-            ConfigureParameters(controller);
-        }
-        private void ConfigureParameters(ControllerModel controller)
-        {
-            foreach (var action in controller.Actions)
-            {
-                foreach (var para in action.Parameters)
-                {
-                    if (para.BindingInfo != null)
-                    {
-                        continue;
-                    }
-
-                    if (!TypeHelper.IsPrimitiveExtendedIncludingNullable(para.ParameterInfo.ParameterType))
-                    {
-                        if (CanUseFormBodyBinding(action, para))
-                        {
-                            para.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
-                        }
-                    }
-                }
-            }
-        }
-        private bool CanUseFormBodyBinding(ActionModel action, ParameterModel parameter)
-        {
-            if (AppConsts.FormBodyBindingIgnoredTypes.Any(t => t.IsAssignableFrom(parameter.ParameterInfo.ParameterType)))
-            {
-                return false;
-            }
-
-            foreach (var selector in action.Selectors)
-            {
-                if (selector.ActionConstraints == null)
-                {
+                if (!typeof(IWebApiRPC).IsAssignableFrom(aController.ControllerType))
                     continue;
+
+                //ApiExplorer
+                if (aController.ApiExplorer.GroupName.IsNullOrEmpty())
+                {
+                    aController.ApiExplorer.GroupName = aController.ControllerName;
                 }
 
-                foreach (var actionConstraint in selector.ActionConstraints)
+                if (aController.ApiExplorer.IsVisible == null)
                 {
+                    aController.ApiExplorer.IsVisible = true;
+                }
 
-                    var httpMethodActionConstraint = actionConstraint as HttpMethodActionConstraint;
-                    if (httpMethodActionConstraint == null)
+                foreach (var aAction in aController.Actions)
+                {
+                    if (aAction.ApiExplorer.IsVisible == null)
                     {
-                        continue;
+                        aAction.ApiExplorer.IsVisible = true;
+                    }
+                }
+
+                //Action
+                foreach (var aAction in aController.Actions)
+                {
+                    //参数校验
+                    List<string> actionFilters = new List<string>
+                    {
+                        "Microsoft.AspNetCore.Mvc.Infrastructure.ClientErrorResultFilterFactory",
+                        "Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilterFactory"
+                    };
+                    actionFilters.ForEach(aFilterTypeString =>
+                    {
+                        var filterType = _mvcCoreAssembly.GetType(aFilterTypeString);
+                        aAction.Filters.Add(Activator.CreateInstance(filterType) as IFilterMetadata);
+                    });
+
+                    //统一POST
+                    var actionSelectorModel = aAction.Selectors[0];
+                    actionSelectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { "POST" }));
+                    actionSelectorModel.EndpointMetadata.Add(new HttpPostAttribute());
+
+                    foreach (var selector in aAction.Selectors)
+                    {
+                        string route = $"{aController.ControllerName}/{aAction.ActionName}".Replace("//", "/");
+                        selector.AttributeRouteModel = new AttributeRouteModel(new Microsoft.AspNetCore.Mvc.RouteAttribute(route));
                     }
 
-                    if (httpMethodActionConstraint.HttpMethods.All(hm => hm.IsIn("GET", "DELETE", "TRACE", "HEAD")))
+                    //JSON支持,只有一个参数并且为复杂类型
+                    if (aAction.Parameters.Count == 1 && !aAction.Parameters[0].ParameterType.IsSimpleType())
                     {
-                        return false;
+                        aAction.Parameters[0].BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
                     }
                 }
             }
-
-            return true;
-        }
-
-        private void ConfigureSelector(ControllerModel controller, DynamicWebApiAttribute controllerAttr)
-        {
-
-            if (controller.Selectors.Any(selector => selector.AttributeRouteModel != null))
-            {
-                return;
-            }
-
-            var areaName = string.Empty;
-
-            if (controllerAttr != null)
-            {
-                areaName = controllerAttr.Module;
-            }
-
-            foreach (var action in controller.Actions)
-            {
-                ConfigureSelector(areaName, controller.ControllerName, action);
-            }
-        }
-        private void ConfigureSelector(string areaName, string controllerName, ActionModel action)
-        {
-
-            var nonAttr = ReflectionHelper.GetSingleAttributeOrDefault<NonDynamicWebApiAttribute>(action.ActionMethod);
-
-            if (nonAttr != null)
-            {
-                return;
-            }
-
-            if (action.Selectors.IsNullOrEmpty() || action.Selectors.Any(a => a.ActionConstraints.IsNullOrEmpty()))
-            {
-                AddAppServiceSelector(areaName, controllerName, action);
-            }
-            else
-            {
-                NormalizeSelectorRoutes(areaName, controllerName, action);
-            }
-        }
-        private void AddAppServiceSelector(string areaName, string controllerName, ActionModel action)
-        {
-
-            var verb = GetHttpVerb(action);
-
-            action.ActionName = GetRestFulActionName(action.ActionName);
-
-            var appServiceSelectorModel = action.Selectors[0];
-
-            if (appServiceSelectorModel.AttributeRouteModel == null)
-            {
-                appServiceSelectorModel.AttributeRouteModel = CreateActionRouteModel(areaName, controllerName, action);
-            }
-
-            if (!appServiceSelectorModel.ActionConstraints.Any())
-            {
-                appServiceSelectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { verb }));
-                switch (verb)
-                {
-                    case "GET":
-                        appServiceSelectorModel.EndpointMetadata.Add(new HttpGetAttribute());
-                        break;
-                    case "POST":
-                        appServiceSelectorModel.EndpointMetadata.Add(new HttpPostAttribute());
-                        break;
-                    case "PUT":
-                        appServiceSelectorModel.EndpointMetadata.Add(new HttpPutAttribute());
-                        break;
-                    case "DELETE":
-                        appServiceSelectorModel.EndpointMetadata.Add(new HttpDeleteAttribute());
-                        break;
-                    default:
-                        throw new Exception($"Unsupported http verb: {verb}.");
-                }
-            }
-
-
-        }
-
-        /// <summary>
-        /// Processing action name
-        /// </summary>
-        /// <param name="actionName"></param>
-        /// <returns></returns>
-        private static string GetRestFulActionName(string actionName)
-        {
-            // custom process action name
-            var appConstsActionName = AppConsts.GetRestFulActionName?.Invoke(actionName);
-            if (appConstsActionName != null)
-            {
-                return appConstsActionName;
-            }
-
-            // default process action name.
-
-            // Remove Postfix
-            actionName = actionName.RemovePostFix(AppConsts.ActionPostfixes.ToArray());
-
-            // Remove Prefix
-            var verbKey = actionName.GetPascalOrCamelCaseFirstWord().ToLower();
-            if (AppConsts.HttpVerbs.ContainsKey(verbKey))
-            {
-                if (actionName.Length == verbKey.Length)
-                {
-                    return "";
-                }
-                else
-                {
-                    return actionName.Substring(verbKey.Length);
-                }
-            }
-            else
-            {
-                return actionName;
-            }
-        }
-        private static void NormalizeSelectorRoutes(string areaName, string controllerName, ActionModel action)
-        {
-            action.ActionName = GetRestFulActionName(action.ActionName);
-            foreach (var selector in action.Selectors)
-            {
-                selector.AttributeRouteModel = selector.AttributeRouteModel == null ?
-                     CreateActionRouteModel(areaName, controllerName, action) :
-                     AttributeRouteModel.CombineAttributeRouteModel(CreateActionRouteModel(areaName, controllerName, action), selector.AttributeRouteModel);
-            }
-        }
-        private static string GetHttpVerb(ActionModel action)
-        {
-            var getValueSuccess = AppConsts.AssemblyDynamicWebApiOptions
-                .TryGetValue(action.Controller.ControllerType.Assembly, out AssemblyDynamicWebApiOptions assemblyDynamicWebApiOptions);
-            if (getValueSuccess && !string.IsNullOrWhiteSpace(assemblyDynamicWebApiOptions?.HttpVerb))
-            {
-                return assemblyDynamicWebApiOptions.HttpVerb;
-            }
-
-
-            var verbKey = action.ActionName.GetPascalOrCamelCaseFirstWord().ToLower();
-
-            var verb = AppConsts.HttpVerbs.ContainsKey(verbKey) ? AppConsts.HttpVerbs[verbKey] : AppConsts.DefaultHttpVerb;
-            return verb;
-        }
-        private static string GetApiPreFix(ActionModel action)
-        {
-            var getValueSuccess = AppConsts.AssemblyDynamicWebApiOptions
-                .TryGetValue(action.Controller.ControllerType.Assembly, out AssemblyDynamicWebApiOptions assemblyDynamicWebApiOptions);
-            if (getValueSuccess && !string.IsNullOrWhiteSpace(assemblyDynamicWebApiOptions?.ApiPrefix))
-            {
-                return assemblyDynamicWebApiOptions.ApiPrefix;
-            }
-
-            return AppConsts.DefaultApiPreFix;
-        }
-        private static AttributeRouteModel CreateActionRouteModel(string areaName, string controllerName, ActionModel action)
-        {
-            var apiPreFix = GetApiPreFix(action);
-            var routeStr = $"{apiPreFix}/{areaName}/{controllerName}/{action.ActionName}".Replace("//", "/");
-            return new AttributeRouteModel(new RouteAttribute(routeStr));
         }
     }
 }
