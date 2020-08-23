@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace Server.Models
+﻿namespace Common
 {
     public class UserInfoDTO
     {
-        public Guid id { get; set; }
+        public string id { get; set; }
         public string name { get; set; }
     }
 }

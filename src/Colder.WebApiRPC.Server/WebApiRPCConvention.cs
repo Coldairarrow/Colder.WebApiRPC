@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-namespace Colder.WebApiRPC.Hosting
+namespace Colder.WebApiRPC.Server
 {
-    public class WebApiRPCConvention : IApplicationModelConvention
+    internal class WebApiRPCConvention : IApplicationModelConvention
     {
         private static readonly Assembly _mvcCoreAssembly = Assembly.Load("Microsoft.AspNetCore.Mvc.Core");
         public void Apply(ApplicationModel application)
@@ -22,11 +23,20 @@ namespace Colder.WebApiRPC.Hosting
                 if (!typeof(IWebApiRPC).IsAssignableFrom(aController.ControllerType))
                     continue;
 
+                var theInterface = type.GetInterfaces().Where(x => x.IsWebApiRPCInterface()).FirstOrDefault();
+
+                var controllerRoute = theInterface.GetCustomAttribute<Abstraction.RouteAttribute>();
+
                 //ApiExplorer
-                if (aController.ApiExplorer.GroupName.IsNullOrEmpty())
+                var description = theInterface.GetCustomAttribute<DescriptionAttribute>();
+                string controllerName = controllerRoute.Template;
+                if (description != null && !description.Description.IsNullOrEmpty())
                 {
-                    aController.ApiExplorer.GroupName = aController.ControllerName;
+                    controllerName = description.Description;
                 }
+
+                aController.ApiExplorer.GroupName = controllerRoute.Template;
+                aController.ControllerName = controllerName;
 
                 if (aController.ApiExplorer.IsVisible == null)
                 {
@@ -61,14 +71,26 @@ namespace Colder.WebApiRPC.Hosting
                     actionSelectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { "POST" }));
                     actionSelectorModel.EndpointMetadata.Add(new HttpPostAttribute());
 
+                    //路由
+                    var interfaceMethod = theInterface.GetMethod(aAction.ActionMethod.Name);
+                    if (interfaceMethod == null)
+                    {
+                        throw new Exception($"{theInterface}未实现方法{aAction.ActionMethod.Name}");
+                    }
+
                     foreach (var selector in aAction.Selectors)
                     {
-                        string route = $"{aController.ControllerName}/{aAction.ActionName}".Replace("//", "/");
+                        string route = Helper.GetRoute(interfaceMethod);
+                        if (!Constant.RoutePrefix.IsNullOrEmpty())
+                        {
+                            route = $"{Constant.RoutePrefix}/{route}".BuildUrl();
+                        }
+
                         selector.AttributeRouteModel = new AttributeRouteModel(new Microsoft.AspNetCore.Mvc.RouteAttribute(route));
                     }
 
                     //JSON支持,只有一个参数并且为复杂类型
-                    if (aAction.Parameters.Count == 1 && !aAction.Parameters[0].ParameterType.IsSimpleType())
+                    if (Helper.IsJsonParamter(aAction.ActionMethod))
                     {
                         aAction.Parameters[0].BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
                     }

@@ -7,6 +7,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>obj\Debug\Server.xml</DocumentationFile>
     <OutputPath>obj\Debug</OutputPath>
+    <NoWarn>1701;1702;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Colder.WebApiRPC.Hosting\Colder.WebApiRPC.Hosting.csproj" />
+    <ProjectReference Include="..\..\src\Colder.WebApiRPC.Server\Colder.WebApiRPC.Server.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
-
-
+  
 </Project>

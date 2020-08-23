@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using System.Reflection;
 
-namespace Colder.WebApiRPC.Hosting
+namespace Colder.WebApiRPC.Server
 {
-    public class WebApiRPCProvider : ControllerFeatureProvider
+    internal class WebApiRPCProvider : ControllerFeatureProvider
     {
         protected override bool IsController(TypeInfo typeInfo)
         {

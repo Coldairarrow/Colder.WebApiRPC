@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Linq;
 
-namespace Colder.WebApiRPC.Hosting
+namespace Colder.WebApiRPC.Abstraction
 {
     internal static class Extentions
     {
@@ -30,9 +29,26 @@ namespace Colder.WebApiRPC.Hosting
             return string.IsNullOrEmpty(str);
         }
 
-        public static T GetSingletonInstanceOrNull<T>(this IServiceCollection services)
+        public static bool IsWebApiRPCInterface(this Type type)
         {
-            return (T)services.FirstOrDefault(d => d.ServiceType == typeof(T))?.ImplementationInstance;
+            return typeof(IWebApiRPC).IsAssignableFrom(type) && type.IsInterface && type != typeof(IWebApiRPC);
+        }
+
+        public static bool IsWebApiRPCImplement(this Type type)
+        {
+            return typeof(IWebApiRPC).IsAssignableFrom(type)
+                && !type.IsAbstract
+                && !type.IsInterface;
+        }
+
+        public static string BuildUrl(this string url)
+        {
+            while (url.Contains("//"))
+            {
+                url = url.Replace("//", "/");
+            }
+
+            return url;
         }
     }
 }
