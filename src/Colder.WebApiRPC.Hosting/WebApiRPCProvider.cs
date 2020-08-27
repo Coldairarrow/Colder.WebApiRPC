@@ -1,9 +1,9 @@
-﻿using Colder.WebApiRPC.Abstraction;
+﻿using Colder.WebApiRPC.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using System.Reflection;
 
-namespace Colder.WebApiRPC.Server
+namespace Colder.WebApiRPC.Hosting
 {
     internal class WebApiRPCProvider : ControllerFeatureProvider
     {

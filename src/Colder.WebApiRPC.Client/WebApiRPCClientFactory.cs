@@ -1,5 +1,5 @@
 ﻿using Castle.DynamicProxy;
-using Colder.WebApiRPC.Abstraction;
+using Colder.WebApiRPC.Abstractions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

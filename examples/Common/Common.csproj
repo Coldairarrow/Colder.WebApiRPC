@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Colder.WebApiRPC.Abstraction\Colder.WebApiRPC.Abstraction.csproj" />
+    <ProjectReference Include="..\..\src\Colder.WebApiRPC.Abstractions\Colder.WebApiRPC.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Colder.WebApiRPC.Server\Colder.WebApiRPC.Server.csproj" />
+    <ProjectReference Include="..\..\src\Colder.WebApiRPC.Hosting\Colder.WebApiRPC.Hosting.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
   

@@ -1,4 +1,4 @@
-using Colder.WebApiRPC.Server;
+using Colder.WebApiRPC.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

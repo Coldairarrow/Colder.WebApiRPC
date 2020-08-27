@@ -1,4 +1,4 @@
-﻿namespace Colder.WebApiRPC.Abstraction
+﻿namespace Colder.WebApiRPC.Abstractions
 {
     /// <summary>
     /// RPC接口标记

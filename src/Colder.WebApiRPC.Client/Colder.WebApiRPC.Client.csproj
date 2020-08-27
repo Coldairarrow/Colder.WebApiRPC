@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Colder.WebApiRPC.Abstraction\Colder.WebApiRPC.Abstraction.csproj" />
+    <ProjectReference Include="..\Colder.WebApiRPC.Abstractions\Colder.WebApiRPC.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

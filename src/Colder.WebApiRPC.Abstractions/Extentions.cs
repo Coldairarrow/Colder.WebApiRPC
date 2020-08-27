@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Colder.WebApiRPC.Abstraction
+namespace Colder.WebApiRPC.Abstractions
 {
     internal static class Extentions
     {

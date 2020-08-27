@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Colder.WebApiRPC.Abstraction
+namespace Colder.WebApiRPC.Abstractions
 {
     /// <summary>
     /// 仅支持简单路由,禁用api/[controller]这种高级路由

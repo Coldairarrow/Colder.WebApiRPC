@@ -1,4 +1,4 @@
-﻿using Colder.WebApiRPC.Abstraction;
+﻿using Colder.WebApiRPC.Abstractions;
 using System.ComponentModel;
 using System.Threading.Tasks;
 

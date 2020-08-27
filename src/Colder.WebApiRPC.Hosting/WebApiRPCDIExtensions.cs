@@ -1,4 +1,4 @@
-﻿using Colder.WebApiRPC.Abstraction;
+﻿using Colder.WebApiRPC.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Colder.WebApiRPC.Server
+namespace Colder.WebApiRPC.Hosting
 {
     /// <summary>
     /// 注入拓展
@@ -29,20 +29,20 @@ namespace Colder.WebApiRPC.Server
                     throw new Exception($"{aImplement}未实现接口");
 
                 var theInterface = interfaces.FirstOrDefault();
-                if (theInterface.GetCustomAttribute<Abstraction.RouteAttribute>() == null)
+                if (theInterface.GetCustomAttribute<Abstractions.RouteAttribute>() == null)
                     throw new Exception($"{theInterface}必须定义RouteAttribute");
 
                 var methods = theInterface.GetMethods().ToList();
                 methods.ForEach(aMethod =>
                 {
-                    if (aMethod.GetCustomAttribute<Abstraction.RouteAttribute>() == null)
+                    if (aMethod.GetCustomAttribute<Abstractions.RouteAttribute>() == null)
                         throw new Exception($"{theInterface}.{aMethod.Name}必须定义RouteAttribute");
                 });
 
                 if (methods.Count != methods.Select(x => x.Name).Distinct().Count())
                     throw new Exception($"{theInterface}禁止方法名重复");
                 if (methods.Count !=
-                    methods.Select(x => x.GetCustomAttribute<Abstraction.RouteAttribute>().Template).Distinct().Count())
+                    methods.Select(x => x.GetCustomAttribute<Abstractions.RouteAttribute>().Template).Distinct().Count())
                     throw new Exception($"{theInterface}禁止路由重复");
             });
         }

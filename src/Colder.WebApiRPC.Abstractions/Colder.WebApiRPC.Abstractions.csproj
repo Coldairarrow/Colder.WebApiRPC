@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
-    <AssemblyName>Colder.WebApiRPC.Abstraction</AssemblyName>
+    <AssemblyName>Colder.WebApiRPC.Abstractions</AssemblyName>
     <RootNamespace>Colder.WebApiRPC.Abstraction</RootNamespace>
     <Version>$(Version)</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -19,7 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Colder.WebApiRPC.Server</_Parameter1>
+      <_Parameter1>Colder.WebApiRPC.Hosting</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Colder.WebApiRPC.Client</_Parameter1>

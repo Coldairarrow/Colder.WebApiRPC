@@ -1,4 +1,4 @@
-﻿namespace Colder.WebApiRPC.Server
+﻿namespace Colder.WebApiRPC.Hosting
 {
     internal static class Constant
     {

@@ -1,4 +1,4 @@
-﻿using Colder.WebApiRPC.Abstraction;
+﻿using Colder.WebApiRPC.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -10,7 +10,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-namespace Colder.WebApiRPC.Server
+namespace Colder.WebApiRPC.Hosting
 {
     internal class WebApiRPCConvention : IApplicationModelConvention
     {
@@ -25,7 +25,7 @@ namespace Colder.WebApiRPC.Server
 
                 var theInterface = type.GetInterfaces().Where(x => x.IsWebApiRPCInterface()).FirstOrDefault();
 
-                var controllerRoute = theInterface.GetCustomAttribute<Abstraction.RouteAttribute>();
+                var controllerRoute = theInterface.GetCustomAttribute<Abstractions.RouteAttribute>();
 
                 //ApiExplorer
                 var description = theInterface.GetCustomAttribute<DescriptionAttribute>();

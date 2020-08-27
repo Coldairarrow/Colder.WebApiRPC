@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Colder.WebApiRPC.Abstraction
+namespace Colder.WebApiRPC.Abstractions
 {
     internal static class AssemblyHelper
     {
