@@ -10,12 +10,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <OutputPath>obj\Debug</OutputPath>
-    <DocumentationFile>obj\Debug\Colder.WebApiRPC.Server.xml</DocumentationFile>
+    <DocumentationFile>obj\Debug\Colder.WebApiRPC.Hosting.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\Colder.WebApiRPC.Server.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Colder.WebApiRPC.Hosting.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

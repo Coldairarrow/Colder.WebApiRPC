@@ -3,18 +3,18 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <AssemblyName>Colder.WebApiRPC.Abstractions</AssemblyName>
-    <RootNamespace>Colder.WebApiRPC.Abstraction</RootNamespace>
+    <RootNamespace>Colder.WebApiRPC.Abstractions</RootNamespace>
     <Version>$(Version)</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>obj\Debug\Colder.WebApiRPC.Abstraction.xml</DocumentationFile>
+    <DocumentationFile>obj\Debug\Colder.WebApiRPC.Abstractions.xml</DocumentationFile>
     <OutputPath>obj\Debug</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DocumentationFile>bin\Debug\Colder.WebApiRPC.Abstraction.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Colder.WebApiRPC.Abstractions.xml</DocumentationFile>
     <OutputPath>bin\Debug\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
